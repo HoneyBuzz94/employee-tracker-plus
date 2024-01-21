@@ -27,12 +27,43 @@ function startMenu() {
         switch(menu){
             case 'View all employees':
                 console.clear();
-                console.log('Here is a list of all employees');
+                console.log(menu);
+                startMenu();
+                break;
+            case 'Add employee':
+                console.clear();
+                console.log(menu);
+                startMenu();
+                break;
+            case 'Update employee role':
+                console.clear();
+                console.log(menu);
+                startMenu();
+                break;
+            case 'View all roles':
+                console.clear();
+                console.log(menu);
+                startMenu();
+                break;
+            case 'Add role':
+                console.clear();
+                console.log(menu);
+                startMenu();
+                break;
+            case 'View all departments':
+                console.clear();
+                console.log(menu);
+                startMenu();
+                break;
+            case 'Add department':
+                console.clear();
+                console.log(menu);
                 startMenu();
                 break;
             case 'Quit':
                 console.clear();
                 console.log('Thank you for using Employee Tracker Plus!')
+                break;
         };
     });
 };
