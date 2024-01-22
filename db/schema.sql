@@ -23,6 +23,7 @@ CREATE TABLE employee (
     last_name VARCHAR(30),
     job_id INT,
     manager_id INT,
+    is_manager BOOLEAN,
     FOREIGN KEY (job_id)
     REFERENCES job(id)
     ON DELETE SET NULL

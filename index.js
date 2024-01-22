@@ -16,7 +16,7 @@ const db = mysql.createConnection(
 );
 
 // General variables
-const questions = [
+const menuOptions = [
     {
         type: 'list',
         message: 'What would you like to do?',
@@ -30,30 +30,31 @@ const questions = [
             'Add department',
             'Quit'
         ],
-        name: 'menu'
+        name: 'options'
     }
 ];
 
+// Run the main menu
 function startMenu() {
-    inquirer.prompt(questions).then(({ menu }) => {
-        switch(menu){
+    inquirer.prompt(menuOptions).then(({ options }) => {
+        switch(options){
             case 'View all employees':
                 viewEmployees(startMenu);
                 break;
             case 'Add employee':
-                addEmployee();
+                addEmployee(startMenu);
                 break;
             case 'Update employee role':
                 updateEmployee();
                 break;
             case 'View all roles':
-                viewRoles();
+                viewRoles(startMenu);
                 break;
             case 'Add role':
                 addRole();
                 break;
             case 'View all departments':
-                viewDepartments();
+                viewDepartments(startMenu);
                 break;
             case 'Add department':
                 addDepartment();
@@ -76,6 +77,89 @@ function viewEmployees(callback) {
         console.table(result);
         callback();
     });
+};
+
+function addEmployee(callback) {
+    // Create a list of choices
+    let roles = [];
+    let managers = [];
+    db.query('SELECT * FROM job', (err, result) => {
+        if(err){
+            console.error(err);
+            return;
+        }
+        result.forEach(role => {
+            roles.push(role.title);
+        });
+    });
+    db.query('SELECT * FROM employee', (err, result) => {
+        if(err){
+            console.error(err);
+            return;
+        }
+        result.forEach(employee => {
+            if(employee.is_manager){
+                managers.push(`${employee.first_name} ${employee.last_name}`);
+            };
+        });
+    });
+
+    // Create list of questions
+    const questions = [
+        {
+            type: 'input',
+            message: 'First name:',
+            name: 'first_name'
+        },
+        {
+            type: 'input',
+            message: 'Last name:',
+            name: 'last_name'
+        },
+        {
+            type: 'list',
+            message: 'Role:',
+            choices: roles,
+            name: 'role'
+        },
+        {
+            type: 'list',
+            message: 'Manager:',
+            choices: managers,
+            name: 'manager'
+        }
+    ];
+
+    // Create new instance of inquirer
+    inquirer.prompt(questions).then((answers) => {
+        console.clear();
+        console.log('New employee successfully added');
+        callback();
+    });
 }
+
+function viewRoles(callback) {
+    db.query('SELECT * FROM job', (err, result) => {
+        if(err){
+            console.error(err);
+            return;
+        }
+        console.clear();
+        console.table(result);
+        callback();
+    });
+};
+
+function viewDepartments(callback) {
+    db.query('SELECT * FROM department', (err, result) => {
+        if(err){
+            console.error(err);
+            return;
+        }
+        console.clear();
+        console.table(result);
+        callback();
+    });
+};
 
 startMenu();
