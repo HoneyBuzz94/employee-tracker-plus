@@ -2,20 +2,20 @@ INSERT INTO department (department_name)
 VALUES
 ("Finance"),
 ("Human Resources"),
-("Customer Service")
+("Customer Service");
 
-INSERT INTO role (title, salary, department_id)
+INSERT INTO job (title, salary, department_id)
 VALUES
-("Finance Specialist I", "$30,000", 1),
-("Finance Specialist II", "$60,000", 1),
-("Finance Specialist Supervisor", "$90,000", 1),
-("HR Specialist I", "$40,000", 2),
-("HR Specialist II", "$70,000", 2),
-("HR Supervisor", "$100,000", 2),
-("Customer Service Representative", "$35,000", 3),
-("Customer Service Supervisor", "$70,000", 3)
+("Finance Specialist I", 30000, 1),
+("Finance Specialist II", 60000, 1),
+("Finance Specialist Supervisor", 90000, 1),
+("HR Specialist I", 40000, 2),
+("HR Specialist II", 70000, 2),
+("HR Supervisor", 100000, 2),
+("Customer Service Representative", 35000, 3),
+("Customer Service Supervisor", 70000, 3);
 
-INSERT INTO employee (first_name, last_name, role_id, manager_id)
+INSERT INTO employee (first_name, last_name, job_id, manager_id)
 VALUES
 ("Thomas", "Karlson", 1, 4),
 ("Katherine", "Mendoza", 1, 4),
@@ -26,4 +26,4 @@ VALUES
 ("Ulysses", "George", 6, NULL),
 ("Nicole", "Whiting", 7, 10),
 ("Neil", "Fielding", 7, 10),
-("Mason", "Shefield", 8, NULL)
+("Mason", "Shefield", 8, NULL);
