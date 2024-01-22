@@ -15,15 +15,15 @@ VALUES
 ("Customer Service Representative", 35000, 3),
 ("Customer Service Supervisor", 70000, 3);
 
-INSERT INTO employee (first_name, last_name, job_id, manager_id, is_manager)
+INSERT INTO employee (first_name, last_name, job_id, manager_id)
 VALUES
-("Thomas", "Karlson", 1, 4, false),
-("Katherine", "Mendoza", 1, 4, false),
-("Octavius", "Ibarra", 2, 4, false),
-("Jacqueline", "Chen", 3, NULL, true),
-("Guy", "Cuartas", 4, 7, false),
-("Hannah", "Jackson", 5, 7, false),
-("Ulysses", "George", 6, NULL, true),
-("Nicole", "Whiting", 7, 10, false),
-("Neil", "Fielding", 7, 10, false),
-("Mason", "Shefield", 8, NULL, true);
+("Thomas", "Karlson", 1, 4),
+("Katherine", "Mendoza", 1, 4),
+("Octavius", "Ibarra", 2, 4),
+("Jacqueline", "Chen", 3, NULL),
+("Guy", "Cuartas", 4, 7),
+("Hannah", "Jackson", 5, 7),
+("Ulysses", "George", 6, NULL),
+("Nicole", "Whiting", 7, 10),
+("Neil", "Fielding", 7, 10),
+("Mason", "Shefield", 8, NULL);

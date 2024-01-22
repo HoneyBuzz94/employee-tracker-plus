@@ -68,6 +68,7 @@ function startMenu() {
 };
 
 function viewEmployees(callback) {
+    // Display employees in the database
     db.query('SELECT * FROM employee', (err, result) => {
         if(err){
             console.error(err);
@@ -82,29 +83,28 @@ function viewEmployees(callback) {
 function addEmployee(callback) {
     // Create a list of choices
     let roles = [];
-    let managers = [];
+    let roleTitles = [];
+    let employees = [];
+    let employeeNames = [];
     db.query('SELECT * FROM job', (err, result) => {
         if(err){
             console.error(err);
             return;
         }
-        result.forEach(role => {
-            roles.push(role.title);
-        });
+        roles = result;
+        roles.forEach(role => roleTitles.push(role.title));
     });
+
     db.query('SELECT * FROM employee', (err, result) => {
         if(err){
             console.error(err);
             return;
         }
-        result.forEach(employee => {
-            if(employee.is_manager){
-                managers.push(`${employee.first_name} ${employee.last_name}`);
-            };
-        });
+        employees = result;
+        employees.forEach(employee => employeeNames.push(`${employee.first_name} ${employee.last_name}`));
     });
 
-    // Create list of questions
+    // Create a list of questions
     const questions = [
         {
             type: 'input',
@@ -119,22 +119,34 @@ function addEmployee(callback) {
         {
             type: 'list',
             message: 'Role:',
-            choices: roles,
+            choices: roleTitles,
             name: 'role'
         },
         {
             type: 'list',
             message: 'Manager:',
-            choices: managers,
+            choices: employeeNames,
             name: 'manager'
         }
     ];
 
     // Create new instance of inquirer
     inquirer.prompt(questions).then((answers) => {
-        console.clear();
-        console.log('New employee successfully added');
-        callback();
+        // Find the IDs of selected role and manager
+        const roleID = roles.find(role => role.title == answers.role).id;
+        const managerID = employees.find(employee => `${employee.first_name} ${employee.last_name}` == answers.manager).id;
+
+        // Insert employee data into employee table
+        db.query(`INSERT INTO employee (first_name, last_name, job_id, manager_id) VALUES ("${answers.first_name}", "${answers.last_name}", ${roleID}, ${managerID})`, (err, result) => {
+            if(err){
+                console.error(err);
+                console.log('The program is closing due to an error. Please try again.')
+                return db.end();
+            }
+            console.clear();
+            console.log(`${answers.first_name} ${answers.last_name} successfully added as a new employee.`);
+            callback();
+        });
     });
 }
 
@@ -142,7 +154,8 @@ function viewRoles(callback) {
     db.query('SELECT * FROM job', (err, result) => {
         if(err){
             console.error(err);
-            return;
+            console.log('The program is closing due to an error. Please try again.')
+            return db.end();
         }
         console.clear();
         console.table(result);
@@ -154,7 +167,8 @@ function viewDepartments(callback) {
     db.query('SELECT * FROM department', (err, result) => {
         if(err){
             console.error(err);
-            return;
+            console.log('The program is closing due to an error. Please try again.')
+            db.end();
         }
         console.clear();
         console.table(result);
