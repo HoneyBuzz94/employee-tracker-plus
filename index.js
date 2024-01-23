@@ -1,4 +1,4 @@
-// Import packages
+// Imports
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const cTable = require('console.table');
@@ -69,7 +69,7 @@ function startMenu() {
 
 function viewEmployees(callback) {
     // Display employees in the database
-    db.query('SELECT * FROM employee', (err, result) => {
+    db.query('SELECT employee.id, employee.first_name, employee.last_name, job.title, department.department_name, job.salary, employee.manager_id FROM employee JOIN job ON employee.job_id = job.id JOIN department ON job.department_id = department.id ORDER BY employee.id', (err, result) => {
         if(err){
             console.error(err);
             return;
