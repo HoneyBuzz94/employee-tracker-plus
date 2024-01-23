@@ -198,7 +198,7 @@ function addRole(callback) {
 
     // Create new instance of inquirer
     inquirer.prompt(questions).then((answers) => {
-        // Find the IDs of selected role and manager
+        // Find the IDs of selected department
         const departmentID = departments.find(department => department.department_name == answers.department).id;
 
         // Insert data into table
@@ -225,6 +225,32 @@ function viewDepartments(callback) {
         console.clear();
         console.table(result);
         callback();
+    });
+};
+
+function addDepartment(callback) {
+    // Create a list of questions
+    const questions = [
+        {
+            type: 'input',
+            message: 'Department name:',
+            name: 'department_name'
+        },
+    ];
+
+    // Create new instance of inquirer
+    inquirer.prompt(questions).then((answers) => {
+        // Insert data into table
+        db.query(`INSERT INTO department (department_name) VALUES ("${answers.department_name}")`, (err, result) => {
+            if(err){
+                console.error(err);
+                console.log('The program is closing due to an error. Please try again.')
+                return db.end();
+            }
+            console.clear();
+            console.log(`${answers.department_name} successfully added as a new department.`);
+            callback();
+        });
     });
 };
 
