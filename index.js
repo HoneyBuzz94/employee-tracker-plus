@@ -45,19 +45,19 @@ function startMenu() {
                 addEmployee(startMenu);
                 break;
             case 'Update employee role':
-                updateEmployee();
+                updateEmployee(startMenu);
                 break;
             case 'View all roles':
                 viewRoles(startMenu);
                 break;
             case 'Add role':
-                addRole();
+                addRole(startMenu);
                 break;
             case 'View all departments':
                 viewDepartments(startMenu);
                 break;
             case 'Add department':
-                addDepartment();
+                addDepartment(startMenu);
                 break;
             case 'Quit':
                 console.clear();
@@ -136,7 +136,7 @@ function addEmployee(callback) {
         const roleID = roles.find(role => role.title == answers.role).id;
         const managerID = employees.find(employee => `${employee.first_name} ${employee.last_name}` == answers.manager).id;
 
-        // Insert employee data into employee table
+        // Insert data into table
         db.query(`INSERT INTO employee (first_name, last_name, job_id, manager_id) VALUES ("${answers.first_name}", "${answers.last_name}", ${roleID}, ${managerID})`, (err, result) => {
             if(err){
                 console.error(err);
@@ -148,7 +148,7 @@ function addEmployee(callback) {
             callback();
         });
     });
-}
+};
 
 function viewRoles(callback) {
     db.query('SELECT * FROM job', (err, result) => {
@@ -160,6 +160,58 @@ function viewRoles(callback) {
         console.clear();
         console.table(result);
         callback();
+    });
+};
+
+function addRole(callback) {
+    // Create a list of choices
+    let departments = [];
+    let departmentNames = [];
+    db.query('SELECT * FROM department', (err, result) => {
+        if(err){
+            console.error(err);
+            return;
+        }
+        departments = result;
+        departments.forEach(department => departmentNames.push(department.department_name));
+    });
+
+    // Create a list of questions
+    const questions = [
+        {
+            type: 'input',
+            message: 'Job title:',
+            name: 'title'
+        },
+        {
+            type: 'input',
+            message: 'Salary:',
+            name: 'salary'
+        },
+        {
+            type: 'list',
+            message: 'Department:',
+            choices: departmentNames,
+            name: 'department'
+        },
+    ];
+
+    // Create new instance of inquirer
+    inquirer.prompt(questions).then((answers) => {
+        // Find the IDs of selected role and manager
+        const departmentID = departments.find(department => department.department_name == answers.department).id;
+
+        // Insert data into table
+        db.query(`INSERT INTO job (title, salary, department_id) VALUES ("${answers.title}", ${answers.salary}, ${departmentID})`, (err, result) => {
+            if(err){
+                console.error(err);
+                console.log('The program is closing due to an error. Please try again.')
+                return db.end();
+            }
+            console.clear();
+            console.log(`${answers.title} successfully added as a new role.`);
+            callback();
+        });
     });
 };
 
