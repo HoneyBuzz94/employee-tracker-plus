@@ -24,6 +24,7 @@ const menuOptions = [{
 
 function startMenu() {
     inquirer.prompt(menuOptions).then(({ options }) => {
+        console.log(options);
         switch(options){
             case 'View all employees':
                 viewEmployees(startMenu);
