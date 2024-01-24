@@ -11,9 +11,9 @@ const db = mysql.createConnection(
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME
-    },
-    console.log(`Connected to ${process.env.DB_NAME}.`)
+    }
 );
+db.connect(function (err) {if(err) throw err;});
 
 // General variables
 const menuOptions = [
@@ -34,7 +34,6 @@ const menuOptions = [
     }
 ];
 
-// Run the main menu
 function startMenu() {
     inquirer.prompt(menuOptions).then(({ options }) => {
         switch(options){
@@ -68,43 +67,16 @@ function startMenu() {
 };
 
 function viewEmployees(callback) {
-    // Display employees in the database
-    db.query('SELECT employee.id, employee.first_name, employee.last_name, job.title, department.department_name, job.salary, employee.manager_id FROM employee JOIN job ON employee.job_id = job.id JOIN department ON job.department_id = department.id ORDER BY employee.id', (err, result) => {
-        if(err){
-            console.error(err);
-            return;
-        }
+    db.promise().query('SELECT employee.id, employee.first_name, employee.last_name, job.title, department.department_name, job.salary, employee.manager_id FROM employee JOIN job ON employee.job_id = job.id JOIN department ON job.department_id = department.id ORDER BY employee.id').then(([rows]) => {
         console.clear();
-        console.table(result);
+        console.table(rows);
         callback();
-    });
+    }).catch(err => console.error(err));
 };
 
 function addEmployee(callback) {
-    // Create a list of choices
-    let roles = [];
     let roleTitles = [];
-    let employees = [];
     let employeeNames = [];
-    db.query('SELECT * FROM job', (err, result) => {
-        if(err){
-            console.error(err);
-            return;
-        }
-        roles = result;
-        roles.forEach(role => roleTitles.push(role.title));
-    });
-
-    db.query('SELECT * FROM employee', (err, result) => {
-        if(err){
-            console.error(err);
-            return;
-        }
-        employees = result;
-        employees.forEach(employee => employeeNames.push(`${employee.first_name} ${employee.last_name}`));
-    });
-
-    // Create a list of questions
     const questions = [
         {
             type: 'input',
@@ -130,53 +102,72 @@ function addEmployee(callback) {
         }
     ];
 
-    // Create new instance of inquirer
-    inquirer.prompt(questions).then((answers) => {
-        // Find the IDs of selected role and manager
-        const roleID = roles.find(role => role.title == answers.role).id;
-        const managerID = employees.find(employee => `${employee.first_name} ${employee.last_name}` == answers.manager).id;
-
-        // Insert data into table
-        db.query(`INSERT INTO employee (first_name, last_name, job_id, manager_id) VALUES ("${answers.first_name}", "${answers.last_name}", ${roleID}, ${managerID})`, (err, result) => {
-            if(err){
-                console.error(err);
-                console.log('The program is closing due to an error. Please try again.')
-                return db.end();
-            }
-            console.clear();
-            console.log(`${answers.first_name} ${answers.last_name} successfully added as a new employee.`);
-            callback();
+    db.promise().query('SELECT * FROM employee JOIN job ON employee.job_id = job.id')
+    .then(([rows]) => {
+        rows.forEach(row => {
+            employeeNames.push(`${row.first_name} ${row.last_name}`);
+            roleTitles.push(row.title);
         });
-    });
+        inquirer.prompt(questions).then((answers) => {
+            const roleID = rows.find(role => role.title == answers.role).id;
+            const managerID = rows.find(employee => `${employee.first_name} ${employee.last_name}` == answers.manager).id;
+
+            db.promise().query(`INSERT INTO employee (first_name, last_name, job_id, manager_id) VALUES ("${answers.first_name}", "${answers.last_name}", ${roleID}, ${managerID})`).then(([rows]) => {
+                console.clear();
+                console.log(`Successfully added new employee.`);
+                callback();
+            });
+        });
+    }).catch(err => console.error(err));
+};
+
+function updateEmployee(callback) {
+    let roleTitles = [];
+    let employeeNames = [];
+    const questions = [
+        {
+            type: 'list',
+            message: 'Employee:',
+            choices: employeeNames,
+            name: 'employee'
+        },
+        {
+            type: 'list',
+            message: 'New role:',
+            choices: roleTitles,
+            name: 'role'
+        },
+    ];
+
+    db.promise().query('SELECT * FROM employee JOIN job ON employee.job_id = job.id')
+    .then(([rows]) => {
+        rows.forEach(row => {
+            employeeNames.push(`${row.first_name} ${row.last_name}`);
+            roleTitles.push(row.title);
+        });
+        inquirer.prompt(questions).then((answers) => {
+            const roleID = rows.find(role => role.title == answers.role).id;
+            const employeeID = rows.find(employee => `${employee.first_name} ${employee.last_name}` == answers.employee).id;
+
+            db.promise().query(`UPDATE employee SET job_id = ${roleID} WHERE employee.id = ${employeeID}`).then(([rows]) => {
+                console.clear();
+                console.log(`Successfully updated employee.`);
+                callback();
+            });
+        });
+    }).catch(err => console.error(err));
 };
 
 function viewRoles(callback) {
-    db.query('SELECT * FROM job', (err, result) => {
-        if(err){
-            console.error(err);
-            console.log('The program is closing due to an error. Please try again.')
-            return db.end();
-        }
+    db.promise().query('SELECT job.id, job.title, job.salary, department.department_name FROM job JOIN department ON job.department_id = department.id ORDER BY job.id').then(([rows]) => {
         console.clear();
-        console.table(result);
+        console.table(rows);
         callback();
-    });
+    }).catch(err => console.error(err));
 };
 
 function addRole(callback) {
-    // Create a list of choices
-    let departments = [];
     let departmentNames = [];
-    db.query('SELECT * FROM department', (err, result) => {
-        if(err){
-            console.error(err);
-            return;
-        }
-        departments = result;
-        departments.forEach(department => departmentNames.push(department.department_name));
-    });
-
-    // Create a list of questions
     const questions = [
         {
             type: 'input',
@@ -196,40 +187,32 @@ function addRole(callback) {
         },
     ];
 
-    // Create new instance of inquirer
-    inquirer.prompt(questions).then((answers) => {
-        // Find the IDs of selected department
-        const departmentID = departments.find(department => department.department_name == answers.department).id;
-
-        // Insert data into table
-        db.query(`INSERT INTO job (title, salary, department_id) VALUES ("${answers.title}", ${answers.salary}, ${departmentID})`, (err, result) => {
-            if(err){
-                console.error(err);
-                console.log('The program is closing due to an error. Please try again.')
-                return db.end();
-            }
-            console.clear();
-            console.log(`${answers.title} successfully added as a new role.`);
-            callback();
+    db.promise().query('SELECT * FROM job JOIN department ON job.department_id = department.id')
+    .then(([rows]) => {
+        rows.forEach(row => {
+            departmentNames.push(row.department_name);
         });
-    });
+        inquirer.prompt(questions).then((answers) => {
+            const departmentID = rows.find(role => role.title == answers.role).id;
+
+            db.promise().query(`INSERT INTO job (title, salary, department_id) VALUES ("${answers.title}", ${answers.salary}, ${departmentID})`).then(([rows]) => {
+                console.clear();
+                console.log(`Successfully added new role.`);
+                callback();
+            });
+        });
+    }).catch(err => console.error(err));
 };
 
 function viewDepartments(callback) {
-    db.query('SELECT * FROM department', (err, result) => {
-        if(err){
-            console.error(err);
-            console.log('The program is closing due to an error. Please try again.')
-            db.end();
-        }
+    db.promise().query('SELECT * FROM department ORDER BY department.id').then(([rows]) => {
         console.clear();
-        console.table(result);
+        console.table(rows);
         callback();
-    });
+    }).catch(err => console.error(err));
 };
 
 function addDepartment(callback) {
-    // Create a list of questions
     const questions = [
         {
             type: 'input',
@@ -238,20 +221,13 @@ function addDepartment(callback) {
         },
     ];
 
-    // Create new instance of inquirer
     inquirer.prompt(questions).then((answers) => {
-        // Insert data into table
-        db.query(`INSERT INTO department (department_name) VALUES ("${answers.department_name}")`, (err, result) => {
-            if(err){
-                console.error(err);
-                console.log('The program is closing due to an error. Please try again.')
-                return db.end();
-            }
+        db.promise().query(`INSERT INTO department (department_name) VALUES ("${answers.department_name}")`).then(([rows]) => {
             console.clear();
-            console.log(`${answers.department_name} successfully added as a new department.`);
+            console.log(`Successfully added new department.`);
             callback();
         });
-    });
+    }).catch(err => console.error(err));
 };
 
 startMenu();
