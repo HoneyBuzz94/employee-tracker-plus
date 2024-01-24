@@ -4,7 +4,7 @@
 Employee Tracker Plus is a command-line application that allows easy access to and management of an employee and department database. This application is powered by inquirer and mysql.
 
 ## Usage
-Here is a [video walkthrough]() demonstrating how to use the application.
+Here is a [video walkthrough](https://drive.google.com/file/d/1FxPE6eF4m6UXxW8rFXPtZyDv6LdWESNK/view) demonstrating how to use the application.
 
 ## Credits
 The following resources and tutorials were used in creating this project:
